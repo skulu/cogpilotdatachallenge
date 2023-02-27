@@ -51,6 +51,7 @@ Utilising only the pupil diameter training set, we obtained the below accuracy, 
 
 ## Results
 
-## Team Members
-1. Tan Kah Ming - [LinkedIn](https://www.linkedin.com/in/tankahming/) | [GitHub](https://github.com/kmt112)
+## Team Members (alphabetical order)
+1. Er Jie Yong - [LinkedIn](https://www.linkedin.com/in/erjieyong/)
+2. Kah Ming Tan - [LinkedIn](https://www.linkedin.com/in/tankahming/) | [GitHub](https://github.com/kmt112)
 2. Skyler Tan - [LinkedIn](https://www.linkedin.com/in/skyler-tan/) | [GitHub](https://github.com/skulu)
