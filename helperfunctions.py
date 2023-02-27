@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import heartpy as hp
+# import heartpy as hp
 import numpy as np
 import os
 import pandas as pd
@@ -18,9 +18,15 @@ def get_dirs_to_csv(data_dir, cap_ID, level, sensor):
                                    os.listdir(os.path.join(data_dir, target_cap_dir[0])) 
                                    if os.path.isdir(os.path.join(data_dir, target_cap_dir[0],d))]
     target_cap_session_dir = os.path.join(data_dir, target_cap_dir[0], target_cap_session_dir_name[0])
-    # get 3 directories of target level for target cap_ID
-    target_cap_level_dir_names = [d for d in 
-                                  os.listdir(target_cap_session_dir) if level in d]
+    
+    if level is None:
+        target_cap_level_dir_names = [d for d in 
+                                    os.listdir(target_cap_session_dir)]
+    else:
+        # get 3 directories of target level for target cap_ID
+        target_cap_level_dir_names = [d for d in 
+                                    os.listdir(target_cap_session_dir) if level in d]
+    
     target_cap_level_dirs = [os.path.join(target_cap_session_dir, d) for d in target_cap_level_dir_names]
     # get 3 data files that contain sensor names from 3 level directories
     keywords = [sensor, 'dat']
@@ -87,7 +93,7 @@ def get_all_data_csv_filenames(data_dir, sensor = '', subject = '', level = ''):
 
 
 # Generate df_runs, which contains the subject, difficulty, run and runtime data for all test runs of interest
-def get_df_runs(data_dir, sensor, subject, level, printing=True):
+def get_df_runs(data_dir, sensor, subject, level, printing=True, eval=False):
     if type(subject) is list:
         fnames = []
         for sub in subject:
@@ -98,11 +104,20 @@ def get_df_runs(data_dir, sensor, subject, level, printing=True):
     subject, difficulty, run, time = [], [], [], []
     for f in fnames:
         split_name = f.split('_')
-        subject.append(split_name[2])
-        difficulty.append(split_name[1])
-        run.append(split_name[3][0])
-        df = pd.read_csv(data_dir + '\\' + f)
-        time.append(df.iloc[-1,0])
+        # print(split_name)
+        if eval:
+            subject.append(split_name[1])
+            difficulty.append('unknown')
+            run_name = split_name[2].split('.')[0]
+            run.append(run_name)
+            df = pd.read_csv(data_dir + '\\' + f)
+            time.append(df.iloc[-1,0])
+        else:
+            subject.append(split_name[2])
+            difficulty.append(split_name[1])
+            run.append(split_name[3][0])
+            df = pd.read_csv(data_dir + '\\' + f)
+            time.append(df.iloc[-1,0])
 
     df_runs = pd.DataFrame({'subject': subject, 'difficulty': difficulty, 'run': run, 'time': time})
     if printing: print(f'Number of runs detected: {df_runs.shape[0]}')
@@ -110,33 +125,49 @@ def get_df_runs(data_dir, sensor, subject, level, printing=True):
     return df_runs
 
 
-# Generate df_runs, which contains the subject, difficulty, run and runtime data for all test runs of interest
-# def get_df_runs(data_dir, sensor, subject, level):
-#     fnames = get_all_data_csv_filenames(data_dir, sensor, subject, level)
+def get_df_runs_htceye(data_dir, sensor, subject, level, printing=True, eval=False):
+    if type(subject) is list:
+        fnames = []
+        for sub in subject:
+            fnames.extend(get_all_data_csv_filenames(data_dir, sensor, sub, level))
+    else:
+        fnames = get_all_data_csv_filenames(data_dir, sensor, subject, level)
 
-#     subject, difficulty, run, time = [], [], [], []
-#     for f in fnames:
-#         split_name = f.split('_')
-#         subject.append(split_name[2])
-#         difficulty.append(split_name[1])
-#         run.append(split_name[3][0])
-#         df = pd.read_csv(data_dir + '\\' + f)
-#         time.append(df.iloc[-1,0])
+    subject, difficulty, run, length = [], [], [], []
+    for f in fnames:
+        split_name = f.split('_')
+        if eval:
+            subject.append(split_name[1])
+            difficulty.append('unknown')
+            run.append(split_name[2][0])
+            df = pd.read_csv(data_dir + '\\' + f)
+            length.append(df.shape[0])
+        else:
+            subject.append(split_name[2])
+            difficulty.append(split_name[1])
+            run.append(split_name[3][0])
+            df = pd.read_csv(data_dir + '\\' + f)
+            length.append(df.shape[0])
 
-#     df_runs = pd.DataFrame({'subject': subject, 'difficulty': difficulty, 'run': run, 'time': time})
-#     print(f'Number of runs detected: {df_runs.shape[0]}')
+    df_runs = pd.DataFrame({'subject': subject, 'difficulty': difficulty, 'run': run, 'length': length})
+    if printing: print(f'Number of runs detected: {df_runs.shape[0]}')
 
-#     return df_runs
+    return df_runs
 
 
-def scale_and_pad(data_dir, scaler, pad_length, df_runs, sensor):
+def scale_and_pad(data_dir, scaler, pad_length, df_runs, sensor, eval=False):
     pad = PaddingTransformer(pad_length = pad_length)
 
     # Get how many columns of data each file has
     sub = df_runs.iloc[0,0]
     dif = df_runs.iloc[0,1]
     run = df_runs.iloc[0,2]
-    path = data_dir + '\\' + sensor + '_' + dif + '_' + sub + '_' + run + '.csv'
+    if eval:
+        path = os.path.join(data_dir, sensor + '_' + sub + '_' + run + '.csv')
+        # data_dir + '\\' + sensor + '_' + sub + '_' + run + '.csv'
+    else:
+        path = os.path.join(data_dir, sensor + '_' + dif + '_' + sub + '_' + run + '.csv')
+        # data_dir + '\\' + sensor + '_' + dif + '_' + sub + '_' + run + '.csv'
     df_tmp = pd.read_csv(path)
 
     X = np.zeros((df_runs.shape[0], df_tmp.shape[1]-1, pad_length))
@@ -146,7 +177,10 @@ def scale_and_pad(data_dir, scaler, pad_length, df_runs, sensor):
         sub = row['subject']
         dif = row['difficulty']
         run = row['run']
-        path = data_dir + '\\' + sensor + '_' + dif + '_' + sub + '_' + run + '.csv'
+        if eval:
+            path = os.path.join(data_dir, sensor + '_' + sub + '_' + run + '.csv')
+        else:
+            path = os.path.join(data_dir, sensor + '_' + dif + '_' + sub + '_' + run + '.csv')
         
         df_tmp = pd.read_csv(path)
         if scaler:
@@ -155,31 +189,46 @@ def scale_and_pad(data_dir, scaler, pad_length, df_runs, sensor):
         X[i] = pad.fit_transform(df_tmp.iloc[:,1:]).T.values
 
         dif_dict = {'01B': 0, '02B': 1, '03B': 2, '04B': 3}
-        y.append(dif_dict[dif])
+        if not eval: 
+            y.append(dif_dict[dif])
     
-    y = np.array(y)
+    if not eval: 
+        y = np.array(y)
     return X, y
 
 
 # Combine each sensor's data to one x numpy file and associated y numpy file
-def generate_ml_data(data_dir, target_dir, file_suffix, scaler, hz, sensor = '', subject = '', level = ''):
+def generate_ml_data(data_dir, target_dir, file_suffix, scaler, pad_length, sensor = '', subject = '', level = '', eval=False):
     # df_runs contains the subject, difficulty, run and runtime data for all test runs of interest
     
-    df_runs = get_df_runs(data_dir, sensor, subject, level)
-    time_step = 1/hz
+    df_runs = get_df_runs(data_dir, sensor, subject, level, True, eval)
 
-    # calculating pad length should use longest of all runs for same sensor
-    df_runs_forpadlength = get_df_runs(data_dir, sensor, '', '', False)
-    pad_length = int(df_runs_forpadlength['time'].max()/time_step)+2
-
-    X, y = scale_and_pad(data_dir, scaler, pad_length, df_runs, sensor)
+    X, y = scale_and_pad(data_dir, scaler, pad_length, df_runs, sensor, eval)
     print(f'X shape: {X.shape}')
-    print(f'y shape: {y.shape}')
+    if not eval: print(f'y shape: {y.shape}')
 
     # Save
-    np.save(target_dir + '\\' + 'X_' + file_suffix + '.npy', X)
-    np.save(target_dir + '\\' + 'y_' + file_suffix + '.npy', y)
-    print('Saved files:\n\t' + 'X_' + file_suffix + '.npy' + '\n\t' + 'y_' + file_suffix + '.npy')
+    np.save(os.path.join(target_dir, 'X_' + file_suffix + '.npy'), X)
+    if not eval:
+        np.save(os.path.join(target_dir, 'y_' + file_suffix + '.npy'), y)
+        print('Saved files:\n\t' + 'X_' + file_suffix + '.npy' + '\n\t' + 'y_' + file_suffix + '.npy')
+    else:
+        print('Saved files:\n\t' + 'X_' + file_suffix + '.npy')
+
+# Generate eye training data to one x numpy file and associated y numpy file for feature of interest
+# def generate_ml_data_eye(data_dir, target_dir, file_suffix, scaler, pad_length, cols, sensor = '', subject = '', level = '', eval=False):
+#     # df_runs contains the subject, difficulty, run and runtime data for all test runs of interest
+    
+#     df_runs = get_df_runs(data_dir, sensor, subject, level, True, eval)
+
+#     X, y = scale_and_pad(data_dir, scaler, pad_length, df_runs, sensor)
+#     print(f'X shape: {X.shape}')
+#     print(f'y shape: {y.shape}')
+
+#     # Save
+#     np.save(target_dir + '\\' + 'X_' + file_suffix + '.npy', X)
+#     np.save(target_dir + '\\' + 'y_' + file_suffix + '.npy', y)
+#     print('Saved files:\n\t' + 'X_' + file_suffix + '.npy' + '\n\t' + 'y_' + file_suffix + '.npy')
 
 
 def find_peaks(df, col):
@@ -239,6 +288,3 @@ def log_result(classifier, class_list, y_test, y_pred_proba, model_result = None
 
     # display(pd.DataFrame(model_result))
     return model_result
-
-# def display_result(result):
-#     display(pd.DataFrame(result))
