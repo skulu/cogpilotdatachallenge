@@ -50,3 +50,7 @@ Utilising only the pupil diameter training set, we obtained the below accuracy, 
 ![diameter classifier metrics](https://github.com/skulu/cogpilotdatachallenge/blob/main/readme_pics/diameter_classifier_metrics.png)
 
 ## Results
+
+## Team Members
+1. Tan Kah Ming - [LinkedIn](https://www.linkedin.com/in/tankahming/) [GitHub](https://github.com/kmt112)
+2. Skyler Tan - [LinkedIn](https://www.linkedin.com/in/skyler-tan/) [GitHub](https://github.com/skulu)
