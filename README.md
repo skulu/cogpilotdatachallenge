@@ -9,10 +9,16 @@ Do create a new virtual environment using the supplied requirements.txt to ensur
 
 Once the virtual environment is set up, the folder structure is as such:
 ```
-Main Directory
-| Code - put code files here: 'Submission.ipynb' and 'helperfunctions.py'
-| dataPackage - the original dataPackage with training set data
-| dataPackageEval - the eval dataset; put the EvalSet_StartEndTimes.csv file in this folder
+├── Main
+│   ├── Code
+│   │   ├── Submission.ipynb
+│   │   ├── helperfunction.py
+│   ├── dataPackage
+│   │   ├── task-ils
+│   │   ├── task-rest
+│   │   ├── EvalSet_StartEndTimes.csv
+│   ├── dataPackageEval
+│   │   ├── EvalSet_StartEndTimes.csv
 ```
 
 ## Method
