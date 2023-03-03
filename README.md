@@ -45,15 +45,15 @@ With the optimised classifiers and hyperparameters found in the previous section
 With these probabilities we now have a training set of ensembled probabilities and an evaluation set of ensembled probabilities with all physiological signals included.
 
 #### Predicting landing difficulty
-With the ensembled training table, we utilised pycaret to determine the importance of features. It was found that pupil diameter had the largest predictive power when validated against holdouts of the training data:
+With the ensembled training table, we utilised pycaret to determine the importance of features. It was found that pupil diameter had the largest predictive power when validated against holdouts of the training data, with features such as gaze direction, respiration, and ECG being of importance too:
 
 ![feature importance](https://github.com/skulu/cogpilotdatachallenge/blob/main/readme_pics/feature_importance.png)
 
-We hypothesize that this is because pupil diameter is an involuntary response that cannot be controlled by training, as compared to other responses such as heart rate, respiration rate etc. We also hypothesize that the poorer visibility of higher difficulty landings correspond well to dilated pupil diameters as the pilot's eyes will naturally dilate when visibility is poor to gather more light.
+We hypothesize that this is because pupil diameter is imoprtant as the poorer visibility of higher difficulty landings correspond well to dilated pupil diameters as the pilot's eyes will naturally dilate when visibility is poor to gather more light. Similarly, we hypothesize that gaze direction is important as the pilots will look at either the instruments or out of the window more depending on visibility conditions as landing difficulty increases. ECG and respiration correspond to the pilot's stress levels and it is logical that changing the difficulty of landing will result in changes to these signals.
 
-Utilising only the pupil diameter training set, we obtained the below accuracy, F1 and AUC scores (do note that due to random seeds results can change from run to run):
+Utilising the 4 most important signals (pupil diameter, gaze direction, respiration, and ECG) for the training set, we obtained the below accuracy, F1 and AUC scores (do note that due to random seeds results can change from run to run):
 
-![diameter classifier metrics](https://github.com/skulu/cogpilotdatachallenge/blob/main/readme_pics/diameter_classifier_metrics.png)
+![classifier metrics](https://github.com/skulu/cogpilotdatachallenge/blob/main/readme_pics/classifier_metrics.png)
 
 ## Results
 
