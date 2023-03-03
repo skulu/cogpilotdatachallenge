@@ -56,6 +56,7 @@ Utilising the 4 most important signals (pupil diameter, gaze direction, respirat
 ![classifier metrics](https://github.com/skulu/cogpilotdatachallenge/blob/main/readme_pics/classifier_metrics.png)
 
 ## Results
+The fully trained model on the 4 important signals was applied to the evaluation data set and we are now pending the results of the competition.
 
 ## Team Members (alphabetical order)
 1. Jie Yong <ins>Er</ins> - [LinkedIn](https://www.linkedin.com/in/erjieyong/)
